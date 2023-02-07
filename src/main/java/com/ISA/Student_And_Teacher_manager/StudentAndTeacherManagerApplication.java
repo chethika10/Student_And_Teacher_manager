@@ -9,7 +9,7 @@ public class StudentAndTeacherManagerApplication {
 	public static void main(String[] args) {
 
 		SpringApplication.run(StudentAndTeacherManagerApplication.class, args);
-		System.out.println("assd");
+		//System.out.println("assd");
 	}
 
 }
