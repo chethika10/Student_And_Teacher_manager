@@ -1,5 +1,7 @@
 package com.ISA.Student_And_Teacher_manager.users;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 import javax.persistence.*;
 import java.time.LocalDate;
 
@@ -24,12 +26,13 @@ public class User {
     private float salary;
     @Column(name = "role")
     private String role;
-
+    @Column(name = "password")
+    private String password;
 
     public User() {
     }
 
-    public User(int id, String name, int age, LocalDate birthDay, String userName, String EMailAddress, float salary, String role) {
+    public User(int id, String name, int age, LocalDate birthDay, String userName, String EMailAddress, float salary, String role, String password) {
         this.id = id;
         this.name = name;
         this.age = age;
@@ -38,9 +41,11 @@ public class User {
         this.EMailAddress = EMailAddress;
         this.salary=salary;
         this.role=role;
+        BCryptPasswordEncoder encoder= new BCryptPasswordEncoder();
+        this.password=encoder.encode(password);
     }
 
-    public User(String name, int age, LocalDate birthDay, String userName, String EMailAddress, float salary, String role) {
+    public User(String name, int age, LocalDate birthDay, String userName, String EMailAddress, float salary, String role, String password) {
         this.name = name;
         this.age = age;
         this.birthDay = birthDay;
@@ -48,7 +53,18 @@ public class User {
         this.EMailAddress = EMailAddress;
         this.salary=salary;
         this.role=role;
+        BCryptPasswordEncoder encoder= new BCryptPasswordEncoder();
+        this.password=encoder.encode(password);
 
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        BCryptPasswordEncoder encoder= new BCryptPasswordEncoder();
+        this.password=encoder.encode(password);
     }
 
     public String getRole() {

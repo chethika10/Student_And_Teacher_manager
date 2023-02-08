@@ -10,13 +10,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/STManager")
+@RequestMapping("/stmanager")
 public class UserController {
 
     @Autowired
     private UserService userService;
 
-    @GetMapping("/getAll")
+    @GetMapping("/getall")
     public ResponseEntity<List<User>> getAllUsers(){
         List<User> users= null;
         try {
@@ -27,7 +27,7 @@ public class UserController {
         return new ResponseEntity<List<User>>(users, HttpStatus.OK);
 
     }
-    @GetMapping("/getById/{id}")
+    @GetMapping("/getbyid/{id}")
     public ResponseEntity<User> getUserById(@PathVariable("id") int userId){
         User user= null;
         try {
@@ -38,8 +38,23 @@ public class UserController {
         return new ResponseEntity<User>(user, HttpStatus.OK);
 
     }
-    @PostMapping("/addOrUpdate")
+    @GetMapping("/getbyusername/{userName}")
+    public ResponseEntity<User> getUserByUserName(@PathVariable("userName") String userName){
+        User user= null;
+        try {
+            user=userService.getUserByUserName(userName);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return new ResponseEntity<User>(user, HttpStatus.OK);
+
+    }
+    @PostMapping("/addorupdate")
     public ResponseEntity<User> addOrUpdate(@RequestBody User user){
+        if (user.getId() != 0 || !user.getRole().equals("STUDENT")){
+            return null;
+
+        }
 
         try {
             user=userService.addOrUpdateUser(user);
