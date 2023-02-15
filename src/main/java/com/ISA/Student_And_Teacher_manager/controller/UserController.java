@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/stmanager")
-@CrossOrigin
+@CrossOrigin(origins = "http://localhost:3000")
 public class UserController {
 
     @Autowired
@@ -51,7 +51,7 @@ public class UserController {
 
     }
     @PostMapping("/addorupdate")
-    public ResponseEntity<User> addOrUpdate(@RequestBody User user){
+    public ResponseEntity<Integer> addOrUpdate(@RequestBody User user){
         if (user.getId() != 0 || !user.getRole().equals("STUDENT")){
             return null;
 
@@ -62,7 +62,7 @@ public class UserController {
         }catch (Exception e){
             e.printStackTrace();
         }
-        return new ResponseEntity<User>(user, HttpStatus.OK);
+        return new ResponseEntity<Integer>(user.getId(), HttpStatus.OK);
 
     }
 }

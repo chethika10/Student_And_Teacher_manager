@@ -1,4 +1,4 @@
-package com.ISA.Student_And_Teacher_manager.config;
+package com.ISA.Student_And_Teacher_manager.securityConfig;
 
 import com.ISA.Student_And_Teacher_manager.users.User;
 import org.springframework.security.core.GrantedAuthority;

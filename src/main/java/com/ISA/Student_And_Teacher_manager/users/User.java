@@ -14,8 +14,8 @@ public class User {
     private int id;
     @Column(name = "name")
     private String name;
-    @Column(name = "age")
-    private int age;
+//    @Column(name = "age")
+//    private int age;
     @Column(name="birthday")
     private LocalDate birthDay;
     @Column(name = "username")
@@ -32,10 +32,10 @@ public class User {
     public User() {
     }
 
-    public User(int id, String name, int age, LocalDate birthDay, String userName, String EMailAddress, float salary, String role, String password) {
+    public User(int id, String name,  LocalDate birthDay, String userName, String EMailAddress, float salary, String role, String password) {
         this.id = id;
         this.name = name;
-        this.age = age;
+       // this.age = age;
         this.birthDay = birthDay;
         this.userName = userName;
         this.EMailAddress = EMailAddress;
@@ -45,9 +45,9 @@ public class User {
         this.password=encoder.encode(password);
     }
 
-    public User(String name, int age, LocalDate birthDay, String userName, String EMailAddress, float salary, String role, String password) {
+    public User(String name,  LocalDate birthDay, String userName, String EMailAddress, float salary, String role, String password) {
         this.name = name;
-        this.age = age;
+        //this.age = age;
         this.birthDay = birthDay;
         this.userName = userName;
         this.EMailAddress = EMailAddress;
@@ -99,13 +99,13 @@ public class User {
         this.name = name;
     }
 
-    public int getAge() {
-        return age;
-    }
-
-    public void setAge(int age) {
-        this.age = age;
-    }
+//    public int getAge() {
+//        return age;
+//    }
+//
+//    public void setAge(int age) {
+//        this.age = age;
+//    }
 
     public LocalDate getBirthDay() {
         return birthDay;
@@ -136,7 +136,7 @@ public class User {
         return "User{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
-                ", age=" + age +
+              //  ", age=" + age +
                 ", birthDay=" + birthDay +
                 ", userName='" + userName + '\'' +
                 ", EMailAddress='" + EMailAddress + '\'' +
