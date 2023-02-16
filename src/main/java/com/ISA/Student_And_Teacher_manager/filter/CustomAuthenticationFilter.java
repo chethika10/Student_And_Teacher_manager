@@ -3,6 +3,7 @@ package com.ISA.Student_And_Teacher_manager.filter;
 import com.ISA.Student_And_Teacher_manager.securityConfig.UserDetailsImpl;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -17,12 +18,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-public class CustomAuthFilter extends UsernamePasswordAuthenticationFilter {
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
+public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private AuthenticationManager authenticationManager;
 
-    public CustomAuthFilter(AuthenticationManager authenticationManager) {
+    public CustomAuthenticationFilter(AuthenticationManager authenticationManager) {
         this.authenticationManager = authenticationManager;
     }
 
@@ -50,8 +55,13 @@ public class CustomAuthFilter extends UsernamePasswordAuthenticationFilter {
                 .withExpiresAt(new Date(System.currentTimeMillis() +60*60*1000))
                 .withIssuer(request.getRequestURL().toString())
                 .sign(algorithm);
-        response.setHeader("accessToken",accessToken);
-        response.setHeader("refreshToken",refreshToken);
+//        response.setHeader("accessToken",accessToken);
+//        response.setHeader("refreshToken",refreshToken);
+        Map<String,String> tokens=new HashMap<>();
+        tokens.put("accessToken",accessToken);
+        tokens.put("refreshToken",refreshToken);
+        response.setContentType(APPLICATION_JSON_VALUE);
+        new ObjectMapper().writeValue(response.getOutputStream(),tokens);
 
     }
 }

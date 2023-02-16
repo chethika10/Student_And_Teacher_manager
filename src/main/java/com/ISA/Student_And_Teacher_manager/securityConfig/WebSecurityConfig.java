@@ -1,9 +1,11 @@
 package com.ISA.Student_And_Teacher_manager.securityConfig;
 
-import com.ISA.Student_And_Teacher_manager.filter.CustomAuthFilter;
+import com.ISA.Student_And_Teacher_manager.filter.CustomAuthenticationFilter;
+import com.ISA.Student_And_Teacher_manager.filter.CustomAuthorizationFilter;
 import com.ISA.Student_And_Teacher_manager.service.impl.UserDetailsServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -13,6 +15,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -40,14 +43,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        CustomAuthenticationFilter customAuthenticationFilter=new CustomAuthenticationFilter(authenticationManagerBean());
+        customAuthenticationFilter.setFilterProcessesUrl("/stmanager/login");
         http.csrf().disable();
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        http.authorizeRequests().anyRequest().permitAll();
-        http.addFilter(new CustomAuthFilter(authenticationManagerBean()));
-        //http.cors().and().csrf().disable()
-//                .authorizeRequests()
-//                .antMatchers("/addorupdate").permitAll()
-
+        http.authorizeRequests().antMatchers("/stmanager/login/**" ,"/stmanager/refreshtoken/**","/stmanager/addorupdate/**").permitAll();
+        http.authorizeRequests().antMatchers(HttpMethod.GET,"/stmanager/getbyusername/**" ).hasAnyAuthority("ADMIN");
+        http.authorizeRequests().anyRequest().authenticated();
+        http.addFilter(customAuthenticationFilter);
+        http.addFilterBefore(new CustomAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 
     @Bean
