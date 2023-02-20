@@ -1,5 +1,6 @@
 package com.ISA.Student_And_Teacher_manager.controller;
 
+import com.ISA.Student_And_Teacher_manager.jwt.RefreshToken;
 import com.ISA.Student_And_Teacher_manager.service.TokenService;
 import com.ISA.Student_And_Teacher_manager.service.UserService;
 import com.ISA.Student_And_Teacher_manager.users.User;
@@ -125,5 +126,30 @@ public class UserController {
         else {
             throw new RuntimeException("Refresh token not found");
         }
+    }
+    @GetMapping("/logout")
+    public void logout(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String authorizationHeader=request.getHeader(AUTHORIZATION);
+        if(authorizationHeader !=null && authorizationHeader.startsWith("Bearer ")){
+            try {
+                String token = authorizationHeader.substring("Bearer ".length());
+                /* TODO change  the S&TManager with something encrypted*/
+                Algorithm algorithm = Algorithm.HMAC256("S&TManager".getBytes());
+                JWTVerifier verifier = JWT.require(algorithm).build();
+                DecodedJWT decodedJWT = verifier.verify(token);
+                String username = decodedJWT.getSubject();
+                RefreshToken refreshToken=tokenService.getRefreshTokenByUsername(username);
+                tokenService.deleteToken(refreshToken);
+            }catch (Exception e){
+                e.printStackTrace();
+                response.setHeader("error",e.getMessage());
+                response.setStatus(FORBIDDEN.value());
+                //response.sendError(FORBIDDEN.value());
+                Map<String,String> error=new HashMap<>();
+                error.put("errorMessage",e.getMessage());
+                response.setContentType(APPLICATION_JSON_VALUE);
+                new ObjectMapper().writeValue(response.getOutputStream(),error);
+            }
+    }
     }
 }

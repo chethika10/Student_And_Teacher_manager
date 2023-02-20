@@ -22,7 +22,7 @@ public class TokenServiceImpl implements TokenService {
 
     @Override
     public RefreshToken addOrUpdateToken(RefreshToken token) {
-        System.out.println("addorupdate");
+       // System.out.println("addorupdate");
         //TODO make as users can login from two devices at once
         RefreshToken token1=null;
         try {
