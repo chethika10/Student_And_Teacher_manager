@@ -1,5 +1,6 @@
 package com.ISA.Student_And_Teacher_manager.controller;
 
+import com.ISA.Student_And_Teacher_manager.service.TokenService;
 import com.ISA.Student_And_Teacher_manager.service.UserService;
 import com.ISA.Student_And_Teacher_manager.users.User;
 import com.auth0.jwt.JWT;
@@ -31,6 +32,8 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+    @Autowired
+    private TokenService tokenService;
 
     @GetMapping("/getall")
     public ResponseEntity<List<User>> getAllUsers(){
@@ -87,6 +90,9 @@ public class UserController {
         if(authorizationHeader !=null && authorizationHeader.startsWith("Bearer ")){
             try {
                 String refreshToken = authorizationHeader.substring("Bearer ".length());
+                if(tokenService.getRefreshTokenByToken(refreshToken)==null){
+                    throw new RuntimeException("User is logged out");
+                }
                 /* TODO change  the S&TManager with something encrypted*/
                 Algorithm algorithm = Algorithm.HMAC256("S&TManager".getBytes());
                 JWTVerifier verifier = JWT.require(algorithm).build();

@@ -43,9 +43,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        CustomAuthenticationFilter customAuthenticationFilter=new CustomAuthenticationFilter(authenticationManagerBean());
+        CustomAuthenticationFilter customAuthenticationFilter= CustomAuthenticationFilter();
         customAuthenticationFilter.setFilterProcessesUrl("/stmanager/login");
-        http.csrf().disable();
+        http.csrf().disable().cors();
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.authorizeRequests().antMatchers("/stmanager/login/**" ,"/stmanager/refreshtoken/**","/stmanager/addorupdate/**").permitAll();
         http.authorizeRequests().antMatchers(HttpMethod.GET,"/stmanager/getbyusername/**" ).hasAnyAuthority("ADMIN");
@@ -58,5 +58,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
+    }
+
+    @Bean
+    public CustomAuthenticationFilter CustomAuthenticationFilter() throws Exception {
+        return new CustomAuthenticationFilter(authenticationManagerBean());
     }
 }

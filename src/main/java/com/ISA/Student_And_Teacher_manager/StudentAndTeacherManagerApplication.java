@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class StudentAndTeacherManagerApplication {
 
 	public static void main(String[] args) {
+		//System.out.println("".length());
 
 		SpringApplication.run(StudentAndTeacherManagerApplication.class, args);
 		//System.out.println("assd");
