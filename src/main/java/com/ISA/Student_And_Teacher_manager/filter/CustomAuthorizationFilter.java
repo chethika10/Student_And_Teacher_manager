@@ -3,6 +3,7 @@ package com.ISA.Student_And_Teacher_manager.filter;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,6 +24,7 @@ import java.util.Map;
 import static java.util.Arrays.stream;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 public class CustomAuthorizationFilter extends OncePerRequestFilter {
@@ -31,7 +33,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
         if(request.getServletPath().equals("/stmanager/login")||request.getServletPath().equals("/stmanager/refreshtoken")){
             filterChain.doFilter(request,response);
         }
-        else if (request.getServletPath().equals("/stmanager/addorupdate")){
+        else if (request.getServletPath().equals("/stmanager/register")){
             filterChain.doFilter(request,response);
         }
         else {
@@ -53,6 +55,17 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
                             new UsernamePasswordAuthenticationToken(username,null,authorities);
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                     filterChain.doFilter(request,response);
+                    response.setStatus(OK.value());
+                }catch (TokenExpiredException e){
+                    System.out.println("TokenExpiredException");
+                    e.printStackTrace();
+                    response.setHeader("error",e.getMessage());
+
+                    response.setStatus(FORBIDDEN.value());
+                    Map<String,String> error=new HashMap<>();
+                    error.put("errorMessage","TokenExpiredException");
+                    response.setContentType(APPLICATION_JSON_VALUE);
+                    new ObjectMapper().writeValue(response.getOutputStream(),error);
                 }
                 catch (Exception e){
                     e.printStackTrace();

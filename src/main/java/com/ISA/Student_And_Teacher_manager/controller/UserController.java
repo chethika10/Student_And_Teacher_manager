@@ -7,6 +7,7 @@ import com.ISA.Student_And_Teacher_manager.users.User;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.security.Principal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -69,19 +71,28 @@ public class UserController {
         return new ResponseEntity<User>(user, HttpStatus.OK);
 
     }
-    @PostMapping("/addorupdate")
+    @PostMapping("/register")
     public ResponseEntity<Integer> addOrUpdate(@RequestBody User user){
-        if (user.getId() != 0 || !user.getRole().equals("STUDENT")){
-            return null;
+        if (user.getId() == 0 &&( user.getRole().equals("ADMIN")||user.getRole().equals("TEACHER"))){
+            try {
+                user.setEnabled(false);
+                user=userService.addOrUpdateUser(user);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+            return new ResponseEntity<Integer>(user.getId(), HttpStatus.OK);
 
-        }
+        }else if(user.getId() == 0 && user.getRole().equals("STUDENT")){
 
-        try {
-            user=userService.addOrUpdateUser(user);
-        }catch (Exception e){
-            e.printStackTrace();
+            try {
+                user.setEnabled(true);
+                user = userService.addOrUpdateUser(user);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return new ResponseEntity<Integer>(user.getId(), HttpStatus.OK);
         }
-        return new ResponseEntity<Integer>(user.getId(), HttpStatus.OK);
+        return null;
 
     }
     @GetMapping("/refreshtoken")
@@ -102,7 +113,7 @@ public class UserController {
                 User user =userService.getUserByUserName(username);
                 String accessToken = JWT.create()
                         .withSubject(user.getUserName())
-                        .withExpiresAt(new Date(System.currentTimeMillis() +30*60*1000))
+                        .withExpiresAt(new Date(System.currentTimeMillis() +3*1*1000))
                         .withIssuer(request.getRequestURL().toString())
                         .withClaim("role",(Arrays.asList(new SimpleGrantedAuthority(user.getRole()))).stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
                         .sign(algorithm);
@@ -111,6 +122,16 @@ public class UserController {
                 tokens.put("refreshToken",refreshToken);
                 response.setContentType(APPLICATION_JSON_VALUE);
                 new ObjectMapper().writeValue(response.getOutputStream(),tokens);
+            }catch (TokenExpiredException e){
+                System.out.println("TokenExpiredException");
+                e.printStackTrace();
+                response.setHeader("error",e.getMessage());
+
+                response.setStatus(FORBIDDEN.value());
+                Map<String,String> error=new HashMap<>();
+                error.put("errorMessage","RefreshTokenExpiredException");
+                response.setContentType(APPLICATION_JSON_VALUE);
+                new ObjectMapper().writeValue(response.getOutputStream(),error);
             }
             catch (Exception e){
                 e.printStackTrace();
@@ -128,16 +149,11 @@ public class UserController {
         }
     }
     @GetMapping("/logout")
-    public void logout(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String authorizationHeader=request.getHeader(AUTHORIZATION);
-        if(authorizationHeader !=null && authorizationHeader.startsWith("Bearer ")){
+    public void logout( HttpServletResponse response, Principal principal) throws IOException {
+
             try {
-                String token = authorizationHeader.substring("Bearer ".length());
-                /* TODO change  the S&TManager with something encrypted*/
-                Algorithm algorithm = Algorithm.HMAC256("S&TManager".getBytes());
-                JWTVerifier verifier = JWT.require(algorithm).build();
-                DecodedJWT decodedJWT = verifier.verify(token);
-                String username = decodedJWT.getSubject();
+
+                String username = principal.getName();
                 RefreshToken refreshToken=tokenService.getRefreshTokenByUsername(username);
                 tokenService.deleteToken(refreshToken);
             }catch (Exception e){
@@ -150,6 +166,17 @@ public class UserController {
                 response.setContentType(APPLICATION_JSON_VALUE);
                 new ObjectMapper().writeValue(response.getOutputStream(),error);
             }
+ //   }
     }
+    @GetMapping("/profile")
+    public ResponseEntity<User> getProfile(Principal principal){
+        User user= null;
+        try {
+            user=userService.getUserByUserName(principal.getName());
+            user.setPassword("");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return new ResponseEntity<User>(user, HttpStatus.OK);
     }
 }

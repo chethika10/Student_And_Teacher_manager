@@ -47,8 +47,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         customAuthenticationFilter.setFilterProcessesUrl("/stmanager/login");
         http.csrf().disable().cors();
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        http.authorizeRequests().antMatchers("/stmanager/login/**" ,"/stmanager/refreshtoken/**","/stmanager/addorupdate/**").permitAll();
-        http.authorizeRequests().antMatchers(HttpMethod.GET,"/stmanager/getbyusername/**" ).hasAnyAuthority("ADMIN");
+        http.authorizeRequests().antMatchers("/stmanager/login/**" ,"/stmanager/refreshtoken/**","/stmanager/register/**").permitAll();
+        http.authorizeRequests()
+                .antMatchers(HttpMethod.GET,"/stmanager/getbyusername/**","/stmanager/getall/**" ,
+                        "/stmanager/getbyid/**").hasAnyAuthority("ADMIN");
         http.authorizeRequests().anyRequest().authenticated();
         http.addFilter(customAuthenticationFilter);
         http.addFilterBefore(new CustomAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
