@@ -50,7 +50,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.authorizeRequests().antMatchers("/stmanager/login/**" ,"/stmanager/refreshtoken/**","/stmanager/register/**").permitAll();
         http.authorizeRequests()
                 .antMatchers(HttpMethod.GET,"/stmanager/getbyusername/**","/stmanager/getall/**" ,
-                        "/stmanager/getbyid/**").hasAnyAuthority("ADMIN");
+                        "/stmanager/getbyid/**","/stmanager/enableuser/**","/stmanager/disableuser/**","/stmanager/deleteuser/**").hasAnyAuthority("ADMIN");
         http.authorizeRequests().anyRequest().authenticated();
         http.addFilter(customAuthenticationFilter);
         http.addFilterBefore(new CustomAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);

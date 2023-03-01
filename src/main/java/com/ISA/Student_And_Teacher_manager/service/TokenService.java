@@ -1,6 +1,6 @@
 package com.ISA.Student_And_Teacher_manager.service;
 
-import com.ISA.Student_And_Teacher_manager.jwt.RefreshToken;
+import com.ISA.Student_And_Teacher_manager.entity.jwt.RefreshToken;
 
 public interface TokenService {
 

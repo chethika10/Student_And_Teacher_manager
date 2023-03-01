@@ -1,4 +1,4 @@
-package com.ISA.Student_And_Teacher_manager.jwt;
+package com.ISA.Student_And_Teacher_manager.entity.jwt;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

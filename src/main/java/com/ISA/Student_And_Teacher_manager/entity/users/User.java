@@ -1,19 +1,20 @@
-package com.ISA.Student_And_Teacher_manager.users;
+package com.ISA.Student_And_Teacher_manager.entity.users;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import com.ISA.Student_And_Teacher_manager.entity.usercourse.UserCourse;
+import lombok.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.Set;
 
 @Entity
 @Table(name="user")
-@Data
-@NoArgsConstructor
+@Getter
+@Setter
 @AllArgsConstructor
+@NoArgsConstructor
+@ToString
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,6 +38,8 @@ public class User {
     private String password;
     @Column(name = "enabled")
     private boolean enabled;
+    @OneToMany(mappedBy = "user",fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    private Set<UserCourse> userCourses;
 
     public String getPassword() {
         return password;

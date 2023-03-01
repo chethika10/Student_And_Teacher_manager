@@ -1,9 +1,9 @@
 package com.ISA.Student_And_Teacher_manager.controller;
 
-import com.ISA.Student_And_Teacher_manager.jwt.RefreshToken;
+import com.ISA.Student_And_Teacher_manager.entity.jwt.RefreshToken;
 import com.ISA.Student_And_Teacher_manager.service.TokenService;
 import com.ISA.Student_And_Teacher_manager.service.UserService;
-import com.ISA.Student_And_Teacher_manager.users.User;
+import com.ISA.Student_And_Teacher_manager.entity.users.User;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -39,14 +39,14 @@ public class UserController {
     private TokenService tokenService;
 
     @GetMapping("/getall")
-    public ResponseEntity<List<User>> getAllUsers(){
-        List<User> users= null;
+    public ResponseEntity<List<Object>> getAllUsers(){
+        List<Object> users= null;
         try {
             users=userService.getAllUsers();
         }catch (Exception e){
             e.printStackTrace();
         }
-        return new ResponseEntity<List<User>>(users, HttpStatus.OK);
+        return new ResponseEntity<List<Object>>(users, HttpStatus.OK);
 
     }
     @GetMapping("/getbyid/{id}")
@@ -54,6 +54,7 @@ public class UserController {
         User user= null;
         try {
             user=userService.getUserById(userId);
+            user.setPassword("");
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -65,6 +66,7 @@ public class UserController {
         User user= null;
         try {
             user=userService.getUserByUserName(userName);
+            user.setPassword("");
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -178,5 +180,50 @@ public class UserController {
             e.printStackTrace();
         }
         return new ResponseEntity<User>(user, HttpStatus.OK);
+    }
+    @GetMapping("/enableuser/{userId}")
+    public ResponseEntity<User> enableUser(@PathVariable("userId") int userId){
+        User user=null;
+
+        try{
+            user=userService.getUserById(userId);
+            if(user!=null) {
+                user.setEnabled(true);
+                userService.addOrUpdateUser(user);
+                user.setPassword("");
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return new ResponseEntity<User>(user,HttpStatus.OK);
+    }
+    @GetMapping("/disableuser/{userId}")
+    public ResponseEntity<User> disableUser(@PathVariable("userId") int userId){
+        User user=null;
+        try{
+            user=userService.getUserById(userId);
+            if(user!=null) {
+                user.setEnabled(false);
+                userService.addOrUpdateUser(user);
+                user.setPassword("");
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return new ResponseEntity<User>(user,HttpStatus.OK);
+    }
+    @GetMapping("/deleteuser/{userId}")
+    public ResponseEntity<User> deleteUser(@PathVariable("userId") int userId){
+        User user=null;
+        try{
+            user=userService.getUserById(userId);
+            if(user!=null) {
+                user=userService.deleteUserById(userId);
+                user.setPassword("");
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return new ResponseEntity<User>(user,HttpStatus.OK);
     }
 }

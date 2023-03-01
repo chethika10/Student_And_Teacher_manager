@@ -2,7 +2,7 @@ package com.ISA.Student_And_Teacher_manager.service.impl;
 
 import com.ISA.Student_And_Teacher_manager.securityConfig.UserDetailsImpl;
 import com.ISA.Student_And_Teacher_manager.repo.UserRepo;
-import com.ISA.Student_And_Teacher_manager.users.User;
+import com.ISA.Student_And_Teacher_manager.entity.users.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

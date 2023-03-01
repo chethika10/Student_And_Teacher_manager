@@ -1,6 +1,6 @@
 package com.ISA.Student_And_Teacher_manager.service.impl;
 
-import com.ISA.Student_And_Teacher_manager.jwt.RefreshToken;
+import com.ISA.Student_And_Teacher_manager.entity.jwt.RefreshToken;
 import com.ISA.Student_And_Teacher_manager.repo.TokenRepo;
 import com.ISA.Student_And_Teacher_manager.service.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,6 +1,6 @@
 package com.ISA.Student_And_Teacher_manager.securityConfig;
 
-import com.ISA.Student_And_Teacher_manager.users.User;
+import com.ISA.Student_And_Teacher_manager.entity.users.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
