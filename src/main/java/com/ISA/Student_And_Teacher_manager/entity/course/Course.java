@@ -1,6 +1,7 @@
 package com.ISA.Student_And_Teacher_manager.entity.course;
 
 import com.ISA.Student_And_Teacher_manager.entity.usercourse.UserCourse;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import javax.persistence.*;
@@ -19,9 +20,12 @@ public class Course {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int courseId;
     private String courseName;
-
     private float fee;
 
+    private String moduleCode;
+    private boolean enabled;
+
     @OneToMany(mappedBy = "course", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonIgnore
     private Set<UserCourse> userCourses;
 }

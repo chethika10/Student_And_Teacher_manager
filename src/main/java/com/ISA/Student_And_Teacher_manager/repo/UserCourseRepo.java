@@ -6,5 +6,5 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface UserCourseRepository extends CrudRepository<UserCourse, UserCourseKey> {
+public interface UserCourseRepo extends CrudRepository<UserCourse, UserCourseKey> {
 }

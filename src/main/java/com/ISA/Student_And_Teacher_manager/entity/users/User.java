@@ -1,6 +1,7 @@
 package com.ISA.Student_And_Teacher_manager.entity.users;
 
 import com.ISA.Student_And_Teacher_manager.entity.usercourse.UserCourse;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
@@ -39,6 +40,7 @@ public class User {
     @Column(name = "enabled")
     private boolean enabled;
     @OneToMany(mappedBy = "user",fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @JsonIgnore
     private Set<UserCourse> userCourses;
 
     public String getPassword() {

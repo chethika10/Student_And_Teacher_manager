@@ -1,6 +1,8 @@
 package com.ISA.Student_And_Teacher_manager.controller;
 
+import com.ISA.Student_And_Teacher_manager.entity.course.Course;
 import com.ISA.Student_And_Teacher_manager.entity.jwt.RefreshToken;
+import com.ISA.Student_And_Teacher_manager.service.CourseService;
 import com.ISA.Student_And_Teacher_manager.service.TokenService;
 import com.ISA.Student_And_Teacher_manager.service.UserService;
 import com.ISA.Student_And_Teacher_manager.entity.users.User;
@@ -37,6 +39,8 @@ public class UserController {
     private UserService userService;
     @Autowired
     private TokenService tokenService;
+    @Autowired
+    private CourseService courseService;
 
     @GetMapping("/getall")
     public ResponseEntity<List<Object>> getAllUsers(){
@@ -225,5 +229,91 @@ public class UserController {
             e.printStackTrace();
         }
         return new ResponseEntity<User>(user,HttpStatus.OK);
+    }
+    @PostMapping("/setSalary")
+    public ResponseEntity<User> setSalary(@RequestBody User user){
+        User user1;
+        try {
+            user1=userService.getUserById(user.getId());
+            if(user1.getRole()!="STUDENT") {
+                user1.setSalary(user.getSalary());
+                user = userService.addOrUpdateUser(user1);
+            }
+            user.setPassword("");
+        }catch (Exception e){
+            user=null;
+            e.printStackTrace();
+        }
+        return  new ResponseEntity<User>(user,HttpStatus.OK);
+    }
+    @PostMapping("/addCourse")
+    public ResponseEntity<Course> addCourse(@RequestBody Course course){
+        try {
+            if(course.getCourseId()==0){
+                course.setEnabled(false);
+                course=courseService.addOrUpdateCourse(course);
+            }
+        }catch (Exception e){
+            //course=null;
+            e.printStackTrace();
+        }
+        return  new ResponseEntity<Course>(course,HttpStatus.OK);
+    }
+    @GetMapping("/getallcources")
+    public ResponseEntity<List<Object>> getAllCourses(){
+        List<Object> courses= null;
+        try {
+            courses=courseService.getAllCourses();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return new ResponseEntity<List<Object>>(courses, HttpStatus.OK);
+
+    }
+
+    @GetMapping("/enablecourse/{courseId}")
+    public ResponseEntity<Course> enableCourse(@PathVariable("courseId") int courseId){
+        Course course=null;
+
+        try{
+            course=courseService.getCourseById(courseId);
+            if(course!=null) {
+                course.setEnabled(true);
+                courseService.addOrUpdateCourse(course);
+
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return new ResponseEntity<Course>(course,HttpStatus.OK);
+    }
+    @GetMapping("/disablecourse/{courseId}")
+    public ResponseEntity<Course> disableCourse(@PathVariable("courseId") int courseId){
+        Course course=null;
+        try{
+            course=courseService.getCourseById(courseId);
+            if(course!=null) {
+                course.setEnabled(false);
+                courseService.addOrUpdateCourse(course);
+
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return new ResponseEntity<Course>(course,HttpStatus.OK);
+    }
+    @GetMapping("/deletecourse/{courseId}")
+    public ResponseEntity<Course> deleteCourse(@PathVariable("courseId") int courseId){
+        Course course=null;
+        try{
+            course=courseService.getCourseById(courseId);
+            if(course!=null) {
+                course=courseService.deleteCourseById(courseId);
+
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return new ResponseEntity<Course>(course,HttpStatus.OK);
     }
 }

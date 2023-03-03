@@ -17,7 +17,7 @@ public class UserCourse {
     @EmbeddedId
     private UserCourseKey userCourseKey;
     @ManyToOne
-    @MapsId("userId")
+    @MapsId("id")
     @JoinColumn(name = "user_id")
     private User user;
     @ManyToOne

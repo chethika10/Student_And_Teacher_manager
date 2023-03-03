@@ -12,6 +12,7 @@ public class StudentAndTeacherManagerApplication {
 		SpringApplication.run(StudentAndTeacherManagerApplication.class, args);
 		//System.out.println("assd");
 //Todo make admin user controlling functionality
+		//todo when paying salary need to check if the user is a student
 	}
 
 }

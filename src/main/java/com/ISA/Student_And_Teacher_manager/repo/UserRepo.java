@@ -14,4 +14,5 @@ public interface UserRepo extends CrudRepository<User,Integer> {
 
     @Query(value = "SELECT id,username,role,enabled FROM user",nativeQuery = true)
     public List<Object> getAllUsers();
+
 }
