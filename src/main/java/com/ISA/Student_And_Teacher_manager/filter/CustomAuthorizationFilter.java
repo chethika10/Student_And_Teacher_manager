@@ -33,7 +33,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
         if(request.getServletPath().equals("/stmanager/login")||request.getServletPath().equals("/stmanager/refreshtoken")){
             filterChain.doFilter(request,response);
         }
-        else if (request.getServletPath().equals("/stmanager/register")){
+        else if (request.getServletPath().equals("/stmanager/register")||request.getServletPath().equals("/stmanager/getallcources")){
             filterChain.doFilter(request,response);
         }
         else {
@@ -58,7 +58,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
                     response.setStatus(OK.value());
                 }catch (TokenExpiredException e){
                     System.out.println("TokenExpiredException");
-                    e.printStackTrace();
+                    //e.printStackTrace();
                     response.setHeader("error",e.getMessage());
 
                     response.setStatus(FORBIDDEN.value());

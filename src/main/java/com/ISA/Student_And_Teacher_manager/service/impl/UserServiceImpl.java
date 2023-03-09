@@ -41,4 +41,14 @@ public class UserServiceImpl implements UserService {
         }
         return user;
     }
+
+    @Override
+    public int getIdByUsername(String username) {
+        return userRepo.findIdByUserName(username);
+    }
+
+    @Override
+    public int getIdByEmail(String email) {
+        return userRepo.findIdByEmail(email);
+    }
 }

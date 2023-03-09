@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.util.Set;
 
 @Entity
@@ -24,7 +25,8 @@ public class Course {
 
     private String moduleCode;
     private boolean enabled;
-
+    private boolean started;
+    private LocalDate startDate;
     @OneToMany(mappedBy = "course", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonIgnore
     private Set<UserCourse> userCourses;

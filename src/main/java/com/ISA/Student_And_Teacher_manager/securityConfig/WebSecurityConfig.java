@@ -47,13 +47,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         customAuthenticationFilter.setFilterProcessesUrl("/stmanager/login");
         http.csrf().disable().cors();
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        http.authorizeRequests().antMatchers("/stmanager/login/**" ,"/stmanager/refreshtoken/**","/stmanager/register/**").permitAll();
+        http.authorizeRequests().antMatchers("/stmanager/login/**" ,"/stmanager/refreshtoken/**","/stmanager/register/**","/stmanager/getallcources/**").permitAll();
         http.authorizeRequests()
                 .antMatchers("/stmanager/getbyusername/**","/stmanager/getall/**" ,
-                        "/stmanager/getbyid/**","/stmanager/enableuser/**","/stmanager/disableuser/**","/stmanager/deleteuser/**",
+                        "/stmanager/enableuser/**","/stmanager/disableuser/**","/stmanager/deleteuser/**",
                         "/stmanager/setSalary/**","/stmanager/addCourse/**","/stmanager/enablecourse/**","/stmanager/disablecourse/**",
-                        "/stmanager/deletecourse/**").hasAnyAuthority("ADMIN");
-        //http.authorizeRequests().antMatchers("/stmanager/getallcources/**").hasAnyAuthority("ADMIN","TEACHER");
+                        "/stmanager/deletecourse/**","/stmanager/addteacher/**","/stmanager/removeteacher/**","/stmanager/unenrolstudent/**",
+                        "/stmanager/addcoursetoteacher/**","/stmanager/removecoursefromteacher/**").hasAnyAuthority("ADMIN");
+        http.authorizeRequests().antMatchers("/stmanager/getstudents/**","/stmanager/getbyid/**","/stmanager/getcourses/**").hasAnyAuthority("ADMIN","TEACHER");
+        http.authorizeRequests().antMatchers("/stmanager/start/**").hasAnyAuthority("TEACHER");
         http.authorizeRequests().anyRequest().authenticated();
         http.addFilter(customAuthenticationFilter);
         http.addFilterBefore(new CustomAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);

@@ -1,11 +1,17 @@
 package com.ISA.Student_And_Teacher_manager.controller;
 
+import com.ISA.Student_And_Teacher_manager.DTO.UserIdAndModuleCode;
+import com.ISA.Student_And_Teacher_manager.DTO.UsernameAndCourse;
 import com.ISA.Student_And_Teacher_manager.entity.course.Course;
 import com.ISA.Student_And_Teacher_manager.entity.jwt.RefreshToken;
+import com.ISA.Student_And_Teacher_manager.entity.usercourse.UserCourse;
+import com.ISA.Student_And_Teacher_manager.entity.usercourse.UserCourseKey;
 import com.ISA.Student_And_Teacher_manager.service.CourseService;
 import com.ISA.Student_And_Teacher_manager.service.TokenService;
+import com.ISA.Student_And_Teacher_manager.service.UserCourseService;
 import com.ISA.Student_And_Teacher_manager.service.UserService;
 import com.ISA.Student_And_Teacher_manager.entity.users.User;
+import com.ISA.Student_And_Teacher_manager.validation.UserValidation;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -41,6 +47,8 @@ public class UserController {
     private TokenService tokenService;
     @Autowired
     private CourseService courseService;
+    @Autowired
+    private UserCourseService userCourseService;
 
     @GetMapping("/getall")
     public ResponseEntity<List<Object>> getAllUsers(){
@@ -54,15 +62,22 @@ public class UserController {
 
     }
     @GetMapping("/getbyid/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable("id") int userId){
-        User user= null;
+    public ResponseEntity<User> getUserById(@PathVariable("id") int userId ,Principal principal){
+        User user= new User();
+        User user1=userService.getUserByUserName(principal.getName());
         try {
             user=userService.getUserById(userId);
             user.setPassword("");
         }catch (Exception e){
             e.printStackTrace();
         }
-        return new ResponseEntity<User>(user, HttpStatus.OK);
+        if(user.getRole().equals("STUDENT")) {
+            return new ResponseEntity<User>(user, HttpStatus.OK);
+        } else if (user1.getRole().equals("ADMIN")) {
+            return new ResponseEntity<User>(user, HttpStatus.OK);
+        }
+        return new ResponseEntity<User>(user1, FORBIDDEN);
+
 
     }
     @GetMapping("/getbyusername/{userName}")
@@ -78,27 +93,43 @@ public class UserController {
 
     }
     @PostMapping("/register")
-    public ResponseEntity<Integer> addOrUpdate(@RequestBody User user){
+    public ResponseEntity<List<String>> addOrUpdate(@RequestBody User user){
+       // System.out.println(user);
+        UserValidation validation=new UserValidation(userService);
+        String validationError=validation.validateUser(user);
+        List<String> response=new ArrayList<>();
+        if(!validationError.equals("")){
+            response.add("0");
+            response.add(validationError);
+            return new ResponseEntity<List<String>>(response, HttpStatus.OK);
+        }
         if (user.getId() == 0 &&( user.getRole().equals("ADMIN")||user.getRole().equals("TEACHER"))){
             try {
                 user.setEnabled(false);
+                user.setPassword(user.getRowPassword());
                 user=userService.addOrUpdateUser(user);
             }catch (Exception e){
                 e.printStackTrace();
             }
-            return new ResponseEntity<Integer>(user.getId(), HttpStatus.OK);
+
+            response.add(""+user.getId());
+            return new ResponseEntity<List<String>>(response, HttpStatus.OK);
 
         }else if(user.getId() == 0 && user.getRole().equals("STUDENT")){
 
             try {
                 user.setEnabled(true);
+                user.setPassword(user.getRowPassword());
                 user = userService.addOrUpdateUser(user);
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            return new ResponseEntity<Integer>(user.getId(), HttpStatus.OK);
+            response.add(""+user.getId());
+            return new ResponseEntity<List<String>>(response, HttpStatus.OK);
         }
-        return null;
+        response.add("0");
+        response.add("No Role Selected");
+        return new ResponseEntity<List<String>>(response, HttpStatus.OK);
 
     }
     @GetMapping("/refreshtoken")
@@ -119,7 +150,7 @@ public class UserController {
                 User user =userService.getUserByUserName(username);
                 String accessToken = JWT.create()
                         .withSubject(user.getUserName())
-                        .withExpiresAt(new Date(System.currentTimeMillis() +3*1*1000))
+                        .withExpiresAt(new Date(System.currentTimeMillis() +3*60*1000))
                         .withIssuer(request.getRequestURL().toString())
                         .withClaim("role",(Arrays.asList(new SimpleGrantedAuthority(user.getRole()))).stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
                         .sign(algorithm);
@@ -251,6 +282,7 @@ public class UserController {
         try {
             if(course.getCourseId()==0){
                 course.setEnabled(false);
+                course.setStarted(false);
                 course=courseService.addOrUpdateCourse(course);
             }
         }catch (Exception e){
@@ -316,4 +348,260 @@ public class UserController {
         }
         return new ResponseEntity<Course>(course,HttpStatus.OK);
     }
+
+    @GetMapping("/getcoursebyid/{id}")
+    public ResponseEntity<Course> getCourseById(@PathVariable("id") int courseId){
+        Course course= null;
+        try {
+            course=courseService.getCourseById(courseId);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return new ResponseEntity<Course>(course, HttpStatus.OK);
+
+    }
+    @GetMapping("/getteachers/{id}")
+    public ResponseEntity<List<Object>> getTeachersForCourse(@PathVariable("id") int courseId){
+        List<Object> users= null;
+        try {
+            users=userCourseService.getUsersForCourse(courseId,"TEACHER");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return new ResponseEntity<List<Object>>(users, HttpStatus.OK);
+    }
+    @GetMapping("/getstudents/{id}")
+    public ResponseEntity<List<Object>> getStudentsForCourse(@PathVariable("id") int courseId){
+        List<Object> users= null;
+        try {
+            users=userCourseService.getUsersForCourse(courseId,"STUDENT");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return new ResponseEntity<List<Object>>(users, HttpStatus.OK);
+    }
+    @PostMapping("/addteacher")
+    public ResponseEntity<Boolean> addTeacherToCourse(@RequestBody UsernameAndCourse usernameAndCourse){
+         UserCourse userCourse = null;
+        try {
+            User user=userService.getUserByUserName(usernameAndCourse.getUsername());
+            Course course=courseService.getCourseById(usernameAndCourse.getCourseId());
+            userCourse=new UserCourse();
+            UserCourseKey key=new UserCourseKey(user.getId(),course.getCourseId());
+            userCourse.setUserCourseKey(key);
+            if(!userCourseService.existsById(key)){
+            userCourse.setCourse(course);
+            userCourse.setUser(user);
+            userCourse=userCourseService.addUserToCourse(userCourse);
+            return new ResponseEntity<Boolean>(true, HttpStatus.OK);
+            }
+            else {
+                throw new RuntimeException("userCourse Already exists");
+            }
+        }catch (Exception e){
+           // e.printStackTrace();
+            System.out.println(e.getMessage());
+            return new ResponseEntity<Boolean>(false, HttpStatus.BAD_REQUEST);
+        }
+
+    }
+    @PostMapping("/removeteacher")
+    public ResponseEntity<Boolean> removeTeacherFromCourse(@RequestBody UsernameAndCourse usernameAndCourse){
+        try {
+            User user=userService.getUserByUserName(usernameAndCourse.getUsername());
+            if(user.getRole().equals("TEACHER")) {
+                int userId = user.getId();
+                int courseId = usernameAndCourse.getCourseId();
+                userCourseService.deleteUserFromCourse(userId, courseId);
+            }else {
+                throw new RuntimeException("user is not a teacher");
+            }
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+            return new ResponseEntity<Boolean>(false, HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<Boolean>(true, HttpStatus.OK);
+    }
+    @GetMapping("/enrol/{id}")
+    public ResponseEntity<Boolean> enrolForCourse(@PathVariable("id") int courseId,Principal principal){
+        try {
+            User user=userService.getUserByUserName(principal.getName());
+            Course course=courseService.getCourseById(courseId);
+            if(user.getRole().equals("STUDENT") && !course.isStarted() && course.isEnabled()) {
+
+                int userId = user.getId();
+                UserCourseKey key=new UserCourseKey(userId,courseId);
+                UserCourse userCourse=new UserCourse();
+                userCourse.setUserCourseKey(key);
+                userCourse.setUser(user);
+                userCourse.setCourse(course);
+                userCourseService.addUserToCourse(userCourse);
+
+            }else {
+                throw new RuntimeException("user is not a student or course started");
+            }
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+            return new ResponseEntity<Boolean>(false, HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<Boolean>(true, HttpStatus.OK);
+    }
+    @GetMapping("/unenrol/{id}")
+    public ResponseEntity<Boolean> UnEnrolFromCourse(@PathVariable("id") int courseId,Principal principal){
+        try {
+            User user=userService.getUserByUserName(principal.getName());
+            Course course=courseService.getCourseById(courseId);
+            if(user.getRole().equals("STUDENT") && !course.isStarted() && course.isEnabled()) {
+
+                int userId = user.getId();
+                userCourseService.deleteUserFromCourse(userId,courseId);
+
+            }else {
+                throw new RuntimeException("user is not a student or course started");
+            }
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+            return new ResponseEntity<Boolean>(false, HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<Boolean>(true, HttpStatus.OK);
+    }
+    @GetMapping("/exists/{id}")
+    public ResponseEntity<Boolean> checkEnrolled(@PathVariable("id") int courseId, Principal principal){
+        try {
+            User user=userService.getUserByUserName(principal.getName());
+            Course course=courseService.getCourseById(courseId);
+            int userId = user.getId();
+            UserCourseKey key=new UserCourseKey(userId,courseId);
+            if( userCourseService.existsById(key)) {
+                return new ResponseEntity<Boolean>(true, HttpStatus.OK);
+
+
+            }else {
+                return new ResponseEntity<Boolean>(false, HttpStatus.OK);
+            }
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+            return new ResponseEntity<Boolean>(false, HttpStatus.BAD_REQUEST);
+        }
+
+    }
+    @PostMapping("/unenrolstudent")
+    public ResponseEntity<Boolean> removeStudentFromCourse(@RequestBody UsernameAndCourse usernameAndCourse){
+        try {
+            User user=userService.getUserByUserName(usernameAndCourse.getUsername());
+            if(user.getRole().equals("STUDENT")) {
+                int userId = user.getId();
+                int courseId = usernameAndCourse.getCourseId();
+                userCourseService.deleteUserFromCourse(userId, courseId);
+            }else {
+                throw new RuntimeException("user is not a student");
+            }
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+            return new ResponseEntity<Boolean>(false, HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<Boolean>(true, HttpStatus.OK);
+    }
+    @GetMapping("/started/{id}")
+    public ResponseEntity<Boolean> checkStarted(@PathVariable("id") int courseId){
+        try {
+            Course course=courseService.getCourseById(courseId);
+            if( course.isStarted()) {
+                return new ResponseEntity<Boolean>(true, HttpStatus.OK);
+
+
+            }else {
+                return new ResponseEntity<Boolean>(false, HttpStatus.OK);
+            }
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+            return new ResponseEntity<Boolean>(false, HttpStatus.BAD_REQUEST);
+        }
+
+    }
+    @GetMapping("/start/{id}")
+    public ResponseEntity<Boolean> checkStarted(@PathVariable("id") int courseId,Principal principal){
+        try {
+            User user=userService.getUserByUserName(principal.getName());
+            Course course=courseService.getCourseById(courseId);
+            int userId = user.getId();
+            UserCourseKey key=new UserCourseKey(userId,courseId);
+            if( !course.isStarted() && userCourseService.existsById(key)) {
+                course.setStarted(true);
+                courseService.addOrUpdateCourse(course);
+                return new ResponseEntity<Boolean>(true, HttpStatus.OK);
+
+
+            }else {
+                return new ResponseEntity<Boolean>(false, HttpStatus.OK);
+            }
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+            return new ResponseEntity<Boolean>(false, HttpStatus.BAD_REQUEST);
+        }
+
+    }
+    @GetMapping("/getcourses/{id}")
+    public ResponseEntity<List<Object>> getCoursesForUser(@PathVariable("id") int userId){
+        List<Object> courses= null;
+        try {
+            courses=userCourseService.getCoursesForUserId(userId);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return new ResponseEntity<List<Object>>(courses, HttpStatus.OK);
+    }
+    @PostMapping("/addcoursetoteacher")
+    public ResponseEntity<Boolean> addCourseToTeacher(@RequestBody UserIdAndModuleCode userIdAndModuleCode){
+        UserCourse userCourse = null;
+        try {
+            User user=userService.getUserById(userIdAndModuleCode.getUserId());
+            Course course=courseService.getCourseByModuleCode(userIdAndModuleCode.getModuleCode());
+            userCourse=new UserCourse();
+            UserCourseKey key=new UserCourseKey(user.getId(),course.getCourseId());
+            userCourse.setUserCourseKey(key);
+            if(!userCourseService.existsById(key)){
+                userCourse.setCourse(course);
+                userCourse.setUser(user);
+                userCourse=userCourseService.addUserToCourse(userCourse);
+                return new ResponseEntity<Boolean>(true, HttpStatus.OK);
+            }
+            else {
+                throw new RuntimeException("userCourse Already exists");
+            }
+        }catch (Exception e){
+            // e.printStackTrace();
+            System.out.println(e.getMessage());
+            return new ResponseEntity<Boolean>(false, HttpStatus.BAD_REQUEST);
+        }
+
+    }
+    @PostMapping("/removecoursefromteacher")
+    public ResponseEntity<Boolean> removeCourseFromTeacher(@RequestBody UserIdAndModuleCode userIdAndModuleCode){
+        try {
+            User user=userService.getUserById(userIdAndModuleCode.getUserId());
+            if(user.getRole().equals("TEACHER")) {
+                int userId = user.getId();
+                int courseId = courseService.getCourseByModuleCode(userIdAndModuleCode.getModuleCode()).getCourseId();
+                userCourseService.deleteUserFromCourse(userId, courseId);
+            }else {
+                throw new RuntimeException("user is not a teacher");
+            }
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+            return new ResponseEntity<Boolean>(false, HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<Boolean>(true, HttpStatus.OK);
+    }
+    @GetMapping("/getmycourses")
+    public ResponseEntity<List<Object>> getMyCourses(Principal principal){
+        List<Object> courses= null;
+        try {
+            courses=userCourseService.getCoursesForUserId(userService.getIdByUsername(principal.getName()));
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return new ResponseEntity<List<Object>>(courses, HttpStatus.OK);
+    }
+
 }

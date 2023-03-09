@@ -7,6 +7,8 @@ import com.ISA.Student_And_Teacher_manager.service.UserCourseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class UserCourseServiceImpl implements UserCourseService {
     @Autowired
@@ -36,5 +38,20 @@ public class UserCourseServiceImpl implements UserCourseService {
             return userCourseRepo.save(userCourse);
         }
         return null;
+    }
+
+    @Override
+    public List<Object> getUsersForCourse(int courseId, String role) {
+        return userCourseRepo.getUsersForCourse(courseId,role);
+    }
+
+    @Override
+    public boolean existsById(UserCourseKey key) {
+        return userCourseRepo.existsById(key);
+    }
+
+    @Override
+    public List<Object> getCoursesForUserId(int userId) {
+        return userCourseRepo.getCoursesForUserId(userId);
     }
 }

@@ -10,4 +10,6 @@ public interface UserService {
     public User addOrUpdateUser(User user);
     public User getUserByUserName(String userName);
     public User deleteUserById(int id);
+    public int getIdByUsername(String username);
+    public int getIdByEmail(String email);
 }

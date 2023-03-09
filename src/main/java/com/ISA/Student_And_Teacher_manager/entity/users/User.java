@@ -30,7 +30,7 @@ public class User {
     @Column(name = "username")
     private String userName;
     @Column(name = "email")
-    private String EMailAddress;
+    private String email;
     @Column(name = "salary")
     private float salary;
     @Column(name = "role")
@@ -39,6 +39,8 @@ public class User {
     private String password;
     @Column(name = "enabled")
     private boolean enabled;
+    @Transient
+    private String rowPassword;
     @OneToMany(mappedBy = "user",fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     @JsonIgnore
     private Set<UserCourse> userCourses;

@@ -35,4 +35,9 @@ public class CourseServiceImpl implements CourseService {
         }
         return deletedCourse;
     }
+
+    @Override
+    public Course getCourseByModuleCode(String moduleCode) {
+        return courseRepo.findCourseByModuleCode(moduleCode);
+    }
 }
