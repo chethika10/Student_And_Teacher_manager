@@ -88,7 +88,7 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
             tokenService.addOrUpdateToken(refreshToken1);
         }catch (Exception e){
            // System.out.println("cds");
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
 
         response.setContentType(APPLICATION_JSON_VALUE);

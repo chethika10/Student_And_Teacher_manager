@@ -1,5 +1,6 @@
 package com.ISA.Student_And_Teacher_manager.controller;
 
+import com.ISA.Student_And_Teacher_manager.DTO.NewStringAndPassword;
 import com.ISA.Student_And_Teacher_manager.DTO.UserIdAndModuleCode;
 import com.ISA.Student_And_Teacher_manager.DTO.UsernameAndCourse;
 import com.ISA.Student_And_Teacher_manager.entity.course.Course;
@@ -23,6 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -604,4 +606,94 @@ public class UserController {
         return new ResponseEntity<List<Object>>(courses, HttpStatus.OK);
     }
 
+    @PostMapping("/changepassword")
+    public ResponseEntity<List<String>> changePassword(@RequestBody NewStringAndPassword newStringAndPassword,HttpServletResponse response,Principal principal){
+        List<String> err=new ArrayList<>();
+        try {
+            User user=userService.getUserByUserName(principal.getName());
+            String encodedPassword=user.getPassword();
+            BCryptPasswordEncoder encoder= new BCryptPasswordEncoder();
+            if(encoder.matches(newStringAndPassword.getNewString(),encodedPassword)){
+                err.add("0");
+                err.add("Your Current password is same as old");
+                return new ResponseEntity<List<String>>(err, HttpStatus.OK);
+            }
+            if(encoder.matches(newStringAndPassword.getPassword(),encodedPassword)){
+                user.setPassword(newStringAndPassword.getNewString());
+                userService.addOrUpdateUser(user);
+                logout(response,principal);
+                err.add("1");
+                err.add("Successful");
+            }else{
+                err.add("0");
+                err.add("Your Current password is wrong");
+            }
+            return new ResponseEntity<List<String>>(err, HttpStatus.OK);
+
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+            err.add("0");
+            err.add("Something wrong");
+            return new ResponseEntity<List<String>>(err, HttpStatus.OK);
+        }
+    }
+    @PostMapping("/changeusername")
+    public ResponseEntity<List<String>> changeUsername(@RequestBody NewStringAndPassword newStringAndPassword,HttpServletResponse response,Principal principal){
+        List<String> err=new ArrayList<>();
+        try {
+            User user=userService.getUserByUserName(principal.getName());
+            String encodedPassword=user.getPassword();
+            BCryptPasswordEncoder encoder= new BCryptPasswordEncoder();
+            UserValidation validation=new UserValidation(userService);
+            String validationErr=validation.validateUsername(newStringAndPassword.getNewString(),principal.getName());
+            if(!validationErr.equals("")){
+                err.add("0");
+                err.add(validationErr);
+                return new ResponseEntity<List<String>>(err, HttpStatus.OK);
+            }
+            if(encoder.matches(newStringAndPassword.getPassword(),encodedPassword)){
+                user.setUserName(newStringAndPassword.getNewString());
+                userService.addOrUpdateUser(user);
+                logout(response,principal);
+                err.add("1");
+                err.add("Successful");
+            }else{
+                err.add("0");
+                err.add("Your Current password is wrong");
+            }
+            return new ResponseEntity<List<String>>(err, HttpStatus.OK);
+
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+            err.add("0");
+            err.add("Something wrong");
+            return new ResponseEntity<List<String>>(err, HttpStatus.OK);
+        }
+    }
+    @PostMapping("/editaccount")
+    public ResponseEntity<List<String>> editAccount(@RequestBody User user,Principal principal){
+        List<String> err=new ArrayList<>();
+        try {
+            User user1 = userService.getUserByUserName(principal.getName());
+            UserValidation validation=new UserValidation(userService);
+            String validationErr=validation.validateEditedAccount(user,user1);
+            if(!validationErr.equals("")){
+                err.add("0");
+                err.add(validationErr);
+            }else {
+                user1.setName(user.getName());
+                user1.setBirthDay(user.getBirthDay());
+                user1.setEmail(user.getEmail());
+                userService.addOrUpdateUser(user1);
+                err.add("1");
+                err.add("Successful");
+            }
+            return new ResponseEntity<List<String>>(err, HttpStatus.OK);
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+            err.add("0");
+            err.add("Something wrong");
+            return new ResponseEntity<List<String>>(err, HttpStatus.OK);
+        }
+    }
 }
