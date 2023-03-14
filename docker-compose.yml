@@ -1,0 +1,35 @@
+services:
+  back-app:
+    build:
+      context: Student_And_Teacher_manager-master
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+    depends_on:
+      - mysql-db
+    networks:
+      - stmanager_app_network
+  front-app:
+    build:
+      context: student_and_teacher_manager_ui-master
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    depends_on:
+      - back-app
+  mysql-db:
+    image: mysql:8.0.32
+    volumes:
+      - dbdata:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: student_and_teacher_manager
+      MYSQL_ROOT_PASSWORD: MYSQL_ALLOW_EMPTY_PASSWORD
+      MYSQL_USER: user1
+      MYSQL_PASSWORD: ABCD
+    networks:
+      - stmanager_app_network
+volumes:
+  dbdata:
+
+networks:
+  stmanager_app_network:
