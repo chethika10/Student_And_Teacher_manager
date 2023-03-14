@@ -36,3 +36,5 @@ networks:
 #sudo docker pull mysql:8.0.32
 #sudo docker run --network stmanager_app_stmanager_app_network -it --rm mysql:8.0.32 mysql -hstmanager_app-mysql-db-1 -uroot -pMYSQL_ALLOW_EMPTY_PASSWORD
 #sudo docker compose up --build
+#./gradlew build -x test
+#npm install
