@@ -38,3 +38,4 @@ networks:
 #sudo docker compose up --build
 #./gradlew build -x test
 #npm install
+#change application.properties
